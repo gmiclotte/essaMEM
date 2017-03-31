@@ -11,4 +11,3 @@ void trim(string &line, long &start, long &end);
 void load_fasta(string filename, string &S, vector<string> &descr, vector<long> &startpos);
 
 #endif // __FASTA_HPP__
-
