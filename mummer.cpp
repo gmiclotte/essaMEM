@@ -25,7 +25,7 @@ int min_len = 20;
 int sparseMult = 1;
 mum_t type = MAM;
 bool rev_comp = false, _4column = false, nucleotides_only = false;
-bool forward = true;
+bool forward_ = true;
 bool setRevComp = false;
 bool setBoth = false;
 bool automatic = true;
@@ -90,7 +90,7 @@ void *query_thread(void *arg_) {
 	if (seq_cnt % arg->skip == arg->skip0) {
 	  // Process P.
 	  cerr << "# P.length()=" << P->length() << endl;
-      if (forward) {
+      if (forward_) {
         if (print) {
             if (print_length) printf("> %s\tLen = %ld\n", meta.c_str(), P->length());
             else printf("> %s\n", meta.c_str());
@@ -142,7 +142,7 @@ void *query_thread(void *arg_) {
   if (meta != "") {
     if (seq_cnt % arg->skip == arg->skip0) {
       cerr << "# P.length()=" << P->length() << endl;
-      if (forward) {
+      if (forward_) {
         if (print) {
             if (print_length) printf("> %s\tLen = %ld\n", meta.c_str(), P->length());
             else printf("> %s\n", meta.c_str());
@@ -309,7 +309,7 @@ int main(int argc, char* argv[]) {
   if (setBoth || setRevComp)
       rev_comp = true;
   if (setRevComp)
-      forward = false;
+      forward_ = false;
 
   sa = new sparseSA(ref, refdescr, startpos, _4column, K, suflink, child, kmer>0, sparseMult, kmer, printSubstring, printRevCompForw, nucleotides_only);
   if (!load.empty()) {
