@@ -16,7 +16,7 @@ pthread_mutex_t cout_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 long memCount = 0;
 
-sparseSA::sparseSA(string &S_, vector<string> &descr_, vector<long> &startpos_,
+sparseSA::sparseSA(string &S_, vector<string> const &descr_, vector<long> &startpos_,
 	bool __4column, long K_, bool suflink_, bool child_, bool kmer_,
 	int sparseMult_, int kMerSize_, bool printSubstring_, bool printRevCompForw_,
 	bool nucleotidesOnly_) :
@@ -490,7 +490,7 @@ void sparseSA::radixStep(int *t_new, int *SA, long &bucketNr, long *BucketBegin,
 }
 
 // Binary search for left boundry of interval.
-long sparseSA::bsearch_left(char c, long i, long s, long e) {
+long sparseSA::bsearch_left(char const c, long const i, long const s, long const e) const {
 	if (c == S[SA[s]+i]) return s;
 	long l = s, r = e;
 	while (r - l > 1) {
@@ -502,7 +502,7 @@ long sparseSA::bsearch_left(char c, long i, long s, long e) {
 }
 
 // Binary search for right boundry of interval.
-long sparseSA::bsearch_right(char c, long i, long s, long e) {
+long sparseSA::bsearch_right(char const c, long const i, long const s, long const e) const {
 	if (c == S[SA[e]+i]) return e;
 	long l = s, r = e;
 	while (r - l > 1) {
@@ -515,7 +515,7 @@ long sparseSA::bsearch_right(char c, long i, long s, long e) {
 
 
 // Simple top down traversal of a suffix array.
-bool sparseSA::top_down(char c, long i, long &start, long &end) {
+bool sparseSA::top_down(char const c, long const i, long &start, long &end) const {
 	if (c < S[SA[start]+i]) return false;
 	if (c > S[SA[end]+i]) return false;
 	long l = bsearch_left(c, i, start, end);
@@ -526,7 +526,7 @@ bool sparseSA::top_down(char c, long i, long &start, long &end) {
 
 // Top down traversal of the suffix array to match a pattern.	NOTE:
 // NO childtab as in the enhanced suffix array (ESA).
-bool sparseSA::search(string &P, long &start, long &end) {
+bool sparseSA::search(string const &P, long &start, long &end) const {
 	start = 0; end = N/K - 1;
 	long i = 0;
 	while (i < (long)P.length()) {
@@ -541,7 +541,7 @@ bool sparseSA::search(string &P, long &start, long &end) {
 
 // Traverse pattern P starting from a given prefix and interval
 // until mismatch or min_len characters reached.
-void sparseSA::traverse(string &P, long prefix, interval_t &cur, int min_len) {
+void sparseSA::traverse(string const &P, long const prefix, interval_t &cur, int const min_len) const {
 	if (hasKmer && cur.depth == 0 && min_len >= kMerSize) {//free match first bases
 		unsigned int index = 0;
 		for (size_t i = 0; i < kMerSize; i++)
@@ -572,7 +572,7 @@ void sparseSA::traverse(string &P, long prefix, interval_t &cur, int min_len) {
 // Traverse pattern P starting from a given prefix and interval
 // until mismatch or min_len characters reached.
 // Uses the child table for faster traversal
-void sparseSA::traverse_faster(const string &P,const long prefix, interval_t &cur, int min_len) {
+void sparseSA::traverse_faster(string const &P, long const prefix, interval_t &cur, int const min_len) const {
 	if (hasKmer && cur.depth == 0 && min_len >= kMerSize) {//free match first bases
 		unsigned int index = 0;
 		for (size_t i = 0; i < kMerSize; i++)
@@ -632,7 +632,7 @@ void sparseSA::traverse_faster(const string &P,const long prefix, interval_t &cu
 //finds the child interval of cur that starts with character c
 //updates left and right bounds of cur to child interval if found, or returns
 //cur if not found (also returns true/false if found or not)
-bool sparseSA::top_down_child(char c, interval_t &cur) {
+bool sparseSA::top_down_child(char const c, interval_t &cur) const {
 	long left = cur.start;
 	long right = CHILD[cur.end];
 	if (cur.start >= right || right > cur.end)
@@ -664,7 +664,7 @@ bool sparseSA::top_down_child(char c, interval_t &cur) {
 // position i in the search string. Adapted from the C++ source code
 // for the wordSA implementation from the following paper: Ferragina
 // and Fischer. Suffix Arrays on Words. CPM 2007.
-bool sparseSA::top_down_faster(char c, long i, long &start, long &end) {
+bool sparseSA::top_down_faster(char const c, long const i, long &start, long &end) const {
 	long l, r, m, r2=end, l2=start, vgl;
 	bool found = false;
 	long cmp_with_first = (long)c - (long)S[SA[start]+i];
@@ -720,7 +720,7 @@ bool sparseSA::top_down_faster(char c, long i, long &start, long &end) {
 
 
 // Suffix link simulation using ISA/LCP heuristic.
-bool sparseSA::suffixlink(interval_t &m) {
+bool sparseSA::suffixlink(interval_t &m) const {
 	m.depth -= K;
 	if ( m.depth <= 0) return false;
 	m.start = ISA[SA[m.start] / K + 1];
@@ -729,7 +729,7 @@ bool sparseSA::suffixlink(interval_t &m) {
 }
 
 // For a given offset in the prefix k, find all MEMs.
-void sparseSA::findMEM(long k, string &P, vector<match_t> &matches, int min_len, bool print) {
+void sparseSA::findMEM(long const k, string const &P, vector<match_t> &matches, int const min_len, bool const print) const {
 	if (k < 0 || k >= K) { cerr << "Invalid k." << endl; return; }
 	// Offset all intervals at different start points.
 	long prefix = k;
@@ -809,7 +809,7 @@ void sparseSA::findMEM(long k, string &P, vector<match_t> &matches, int min_len,
 
 // Use LCP information to locate right maximal matches. Test each for
 // left maximality.
-void sparseSA::collectMEMs(string &P, long prefix, interval_t mli, interval_t xmi, vector<match_t> &matches, int min_len, bool print) {
+void sparseSA::collectMEMs(string const &P, long prefix, interval_t mli, interval_t xmi, vector<match_t> &matches, int const min_len, bool const print) const {
 	// All of the suffixes in xmi's interval are right maximal.
 	for (long i = xmi.start; i <= xmi.end; i++) find_Lmaximal(P, prefix, SA[i], xmi.depth, matches, min_len, print);
 
@@ -838,7 +838,7 @@ void sparseSA::collectMEMs(string &P, long prefix, interval_t mli, interval_t xm
 
 
 // Finds left maximal matches given a right maximal match at position i.
-void sparseSA::find_Lmaximal(string &P, long prefix, long i, long len, vector<match_t> &matches, int min_len, bool print) {
+void sparseSA::find_Lmaximal(string const &P, long prefix, long i, long len, vector<match_t> &matches, int const min_len, bool const print) const {
 	long Plength = P.length();
 	// Advance to the left up to K steps.
 	for (long k = 0; k < sparseMult*K; k++) {
@@ -865,7 +865,7 @@ void sparseSA::find_Lmaximal(string &P, long prefix, long i, long len, vector<ma
 
 // Print results in format used by MUMmer v3.	Prints results
 // 1-indexed, instead of 0-indexed.
-void sparseSA::print_match(match_t m) {
+void sparseSA::print_match(match_t const m) const {
 	memCount++;
 	if (_4column == false) {
 		printf("%8ld	%8ld	%8ld\n", m.ref + 1, m.query + 1, m.len);
@@ -887,7 +887,7 @@ void sparseSA::print_match(match_t m) {
 // This version of print match places m_new in a buffer. The buffer is
 // flushed if m_new.len <= 0 or it reaches 1000 entries.	Buffering
 // limits the number of locks on cout.
-void sparseSA::print_match(match_t m_new, vector<match_t> &buf) {
+void sparseSA::print_match(match_t const m_new, vector<match_t> &buf) const {
 	if (m_new.len > 0)	buf.push_back(m_new);
 	if (buf.size() > 1000 || m_new.len <= 0) {
 		pthread_mutex_lock(&cout_mutex);
@@ -897,7 +897,7 @@ void sparseSA::print_match(match_t m_new, vector<match_t> &buf) {
 	}
 }
 
-void sparseSA::print_match(string meta, vector<match_t> &buf, bool rc) {
+void sparseSA::print_match(string const &meta, vector<match_t> &buf, bool const rc) const {
 	pthread_mutex_lock(&cout_mutex);
 	if (!rc) printf("> %s\n", meta.c_str());
 	else printf("> %s Reverse\n", meta.c_str());
@@ -908,7 +908,8 @@ void sparseSA::print_match(string meta, vector<match_t> &buf, bool rc) {
 
 // Finds maximal almost-unique matches (MAMs) These can repeat in the
 // given query pattern P, but occur uniquely in the indexed reference S.
-void sparseSA::findMAM(string &P, vector<match_t> &matches, int min_len, long& currentCount, bool print) {
+void sparseSA::findMAM(string const &P, vector<match_t> &matches,
+	int const min_len, long& currentCount, bool const print) const {
 	long Plength = P.length();
 	memCount = 0;
 	interval_t cur(0, N-1, 0);
@@ -942,7 +943,7 @@ void sparseSA::findMAM(string &P, vector<match_t> &matches, int min_len, long& c
 
 // Returns true if the position p1 in the query pattern and p2 in the
 // reference is left maximal.
-bool sparseSA::is_leftmaximal(string &P, long p1, long p2) {
+bool sparseSA::is_leftmaximal(string const &P, long const p1, long const p2) const {
 	if (p1 == 0 || p2 == 0) return true;
 	else return P[p1-1] != S[p2-1];
 }
@@ -951,7 +952,7 @@ bool sparseSA::is_leftmaximal(string &P, long p1, long p2) {
 struct by_ref { bool operator() (const match_t &a, const match_t &b) const { if (a.ref == b.ref) return a.len > b.len; else return a.ref < b.ref; }	};
 
 // Maximal Unique Match (MUM)
-void sparseSA::MUM(string &P, vector<match_t> &unique, int min_len, long& currentCount, bool forward_, bool print) {
+void sparseSA::MUM(string const &P, vector<match_t> &unique, int const min_len, long& currentCount, bool forward_, bool const print) {
 	forward = forward_;
 	// Find unique MEMs.
 	vector<match_t> matches;
@@ -1013,7 +1014,7 @@ void *MEMthread(void *arg) {
 	return 0;
 }
 
-void sparseSA::MEM(string &P, vector<match_t> &matches, int min_len, bool print, long& currentCount, bool forward_, int num_threads) {
+void sparseSA::MEM(string &P, vector<match_t> &matches, int const min_len, bool const print, long& currentCount, bool forward_, int const num_threads) {
 	forward = forward_;
 	if (min_len < K) return;
 	memCount=0;
