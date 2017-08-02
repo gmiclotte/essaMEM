@@ -2,3 +2,6 @@
 /dist/
 /build/
 /alfalfa/
+/*.o
+mummer
+.depend
